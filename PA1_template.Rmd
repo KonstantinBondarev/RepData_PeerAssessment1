@@ -1,25 +1,73 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "PA1_template"
+author: "Konstantin"
+date: "23 Januar 2018"
+output:
+  html_document: default
+  pdf_document: default
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-## Loading and preprocessing the data
+## R Markdown
 
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-## What is mean total number of steps taken per day?
+Read the file
+```{r, echo=TRUE, results='asis'}
+library(ggplot2)
+library(readr)
+activity <- read_csv("~/activity.csv", col_types = cols(date = col_date(format = "%Y-%m-%d")))
+```
+##What is mean total number of steps taken per day?
+```{r, echo=TRUE, results='asis'}
+total_steps<-aggregate(activity$steps, by=list(date=activity$date), FUN=sum)
+hist(total_steps$x)
+mean<-mean(total_steps$x, na.rm = TRUE)
+median<-median(total_steps$x,  na.rm = TRUE)
+```
+The median is `r median` and the mean is `r mean`.
 
+##What is the average daily activity pattern?
+```{r, echo=TRUE, results='asis'}
+mean_steps<-aggregate(activity$steps, by=list(interval=activity$interval), FUN=mean, na.rm=TRUE)
+ggplot(mean_steps,aes(interval, x)) + geom_line() + geom_point()
+```
+The median is `r median` and the mean is `r mean`.
+##Imputing missing values
+```{r, echo=TRUE, results='asis'}
+nas<-sum(is.na(activity$steps))
+med_steps<-aggregate(activity$steps, by=list(interval=activity$interval), FUN=median, na.rm=TRUE)
+activity_no_NA<-merge(x = activity, y = med_steps, by = "interval", all.x = TRUE)
+activity_no_NA$steps<-ifelse(is.na(activity_no_NA$steps)==TRUE,activity_no_NA$x,activity_no_NA$steps)
+sum<-aggregate(activity$steps, by=list(date=activity$date), FUN=sum, na.rm=TRUE)
+sum_no_NA<-aggregate(activity_no_NA$steps, by=list(date=activity_no_NA$date), FUN=sum, na.rm=TRUE)
+par(mfrow=c(1,2))
+hist(sum_no_NA$x)
+hist(sum$x)
+med_no_NA<-median(sum_no_NA$x)
+med<-median(sum$x)
+mean_no_NA<-mean(sum_no_NA$x)
+mean<-mean(sum$x)
+```
+The number of NAs is `r nas`.
+The mean is `r mean`and median is `r med`.
+Without NA's is the mean `r mean_no_NA`and the median is `r med_no_NA`.
 
-
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
+##Are there differences in activity patterns between weekdays and weekends?
+```{r, echo=TRUE, results='asis'}
+activity_no_NA$weekday<-weekdays(activity_no_NA$date)
+activity_no_NA$weekend<-ifelse(activity_no_NA$weekday=="Samstag"|activity_no_NA$weekday=="Sonntag",1,0)
+activity_wday<-activity_no_NA[activity_no_NA$weekend==0,]
+activity_wend<-activity_no_NA[activity_no_NA$weekend==1,]
+wday_avg<-aggregate(activity_wday$steps, by=list(interval=activity_wday$interval), FUN=mean, na.rm=TRUE)
+wend_avg<-aggregate(activity_wend$steps, by=list(interval=activity_wend$interval), FUN=mean, na.rm=TRUE)
+require(gridExtra)
+plot1 <- ggplot(wday_avg,aes(interval, x)) + geom_line() + geom_point()
+plot2 <- ggplot(wend_avg,aes(interval, x)) + geom_line() + geom_point()
+grid.arrange(plot1, plot2, ncol=2)
+```
