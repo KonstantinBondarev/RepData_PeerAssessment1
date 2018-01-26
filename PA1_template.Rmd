@@ -34,7 +34,7 @@ The median is `r median` and the mean is `r mean`.
 
 ##What is the average daily activity pattern?
 ```{r, echo=TRUE, results='asis'}
-mean_steps<-aggregate(activity$steps, by=list(interval=activity$interval), FUN=mean, na.rm=TRUE)
+mean_steps<-aggregate(activity$steps, by=list(interval=activity$date), FUN=mean, na.rm=TRUE)
 ggplot(mean_steps,aes(interval, x)) + geom_line() + geom_point()
 ```
 The median is `r median` and the mean is `r mean`.
@@ -64,8 +64,8 @@ activity_no_NA$weekday<-weekdays(activity_no_NA$date)
 activity_no_NA$weekend<-ifelse(activity_no_NA$weekday=="Samstag"|activity_no_NA$weekday=="Sonntag",1,0)
 activity_wday<-activity_no_NA[activity_no_NA$weekend==0,]
 activity_wend<-activity_no_NA[activity_no_NA$weekend==1,]
-wday_avg<-aggregate(activity_wday$steps, by=list(interval=activity_wday$interval), FUN=mean, na.rm=TRUE)
-wend_avg<-aggregate(activity_wend$steps, by=list(interval=activity_wend$interval), FUN=mean, na.rm=TRUE)
+wday_avg<-aggregate(activity_wday$steps, by=list(interval=activity_wday$date), FUN=mean, na.rm=TRUE)
+wend_avg<-aggregate(activity_wend$steps, by=list(interval=activity_wend$date), FUN=mean, na.rm=TRUE)
 require(gridExtra)
 plot1 <- ggplot(wday_avg,aes(interval, x)) + geom_line() + geom_point()
 plot2 <- ggplot(wend_avg,aes(interval, x)) + geom_line() + geom_point()
